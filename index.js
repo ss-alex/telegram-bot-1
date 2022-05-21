@@ -31,6 +31,23 @@ const gameOptions = {
                     {text: '7', callback_data: '7'},
                     {text: '8', callback_data: '8'},
                     {text: '9', callback_data: '9'}
+                ],
+
+                [
+                    {text: '0', callback_data: '0'}
+                ]
+            ]
+        }
+    )
+}
+
+/// Кнопка: Играть ещё раз
+const againOption = {
+    reply_markup: JSON.stringify(
+        {
+            inline_keyboard: [
+                [
+                    {text: 'Играть ещё раз', callback_data: '/again'}
                 ]
             ]
         }
@@ -68,11 +85,15 @@ const start = () => {
         return bot.sendMessage(chatId, `Я тебя не понимаю, попробуй еще раз`)
     })
 
-    bot.on('callback_query', message => {
+    bot.on('callback_query', async message => {
         const data = message.data
         const chatId = message.message.chat.id
 
-        bot.sendMessage(chatId, `Ты выбрал цифру ${data}`)
+        if (data == chats[chatId]) {
+            return await bot.sendMessage(chatId, `Поздравляю ты отгадал ${chats[chatId]}`, againOption)
+        } else {
+            return await bot.sendMessage(chatId, `К сожалению ты не угадал цифру, бот загадал цифру ${chats[chatId]}`, againOption)
+        }
     })
 }
 
