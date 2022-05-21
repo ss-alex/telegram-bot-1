@@ -7,10 +7,41 @@ const token = '5223896231:AAFWujkhXSN2ic7UMHjo-wOTC9hjzia49mg'
 /// Создание бота
 const bot = new telegramApi(token, {polling: true})
 
+/// Локальная база данных
+const chats = {}
+
+/// Игровые кнопки
+const gameOptions = {
+    reply_markup: JSON.stringify(
+        {
+            inline_keyboard: [
+                [
+                    {text: '1', callback_data: '1'}, 
+                    {text: '2', callback_data: '2'},
+                    {text: '3', callback_data: '3'},
+                ],
+
+                [
+                    {text: '4', callback_data: '4'}, 
+                    {text: '5', callback_data: '5'}, 
+                    {text: '6', callback_data: '6'}
+                ],
+
+                [
+                    {text: '7', callback_data: '7'},
+                    {text: '8', callback_data: '8'},
+                    {text: '9', callback_data: '9'}
+                ]
+            ]
+        }
+    )
+}
+
 const start = () => {
     bot.setMyCommands([
         {command: '/start', description: 'Начальное приветствие'},
-        {command: '/info', description: 'Информация'}
+        {command: '/info', description: 'Получить информацию о пользователе'},
+        {command: '/game', description: 'Игра угадай цифру'}
     ]);
     
     bot.on('message', async message => {
@@ -26,8 +57,22 @@ const start = () => {
             return bot.sendMessage(chatId, `Тебя зовут ${message.from.first_name}`)
         }
 
-        // Месседж, если ни одна из функций не отработала
+        if (text === '/game') {
+            await bot.sendMessage(chatId, `Сейчас я загадаю цифру от 0 до 9, а ты должен её отгадать`)
+            const randomNumber = Math.floor((Math.random() * 10))
+            chats[chatId] = randomNumber
+            return bot.sendMessage(chatId, 'Отгадывай', gameOptions)
+        }
+
+        /// Месседж, если ни одна из функций не отработала
         return bot.sendMessage(chatId, `Я тебя не понимаю, попробуй еще раз`)
+    })
+
+    bot.on('callback_query', message => {
+        const data = message.data
+        const chatId = message.message.chat.id
+
+        bot.sendMessage(chatId, `Ты выбрал цифру ${data}`)
     })
 }
 
